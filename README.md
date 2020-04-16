@@ -30,6 +30,18 @@ Complete the following steps to start a new project (NEW-PROJECT-NAME):
 2. Open Postman, set Headers `Key` - `Authorization`, `Value` - `Bearer 1234`. This should return `{ok: true}`  
 *1234 is the default API_KEY specified in the .env file, this will eventually need to be changed
 
+### IV. Deploy API to Heroku and Set API Token 
+1. Add a new Heroku application with `heroku create`.   
+*This will make a new git remote called "heroku"
+2. Deploy to heroku with `git push heroku master`
+3. Generate a new UUID (https://www.uuidgenerator.net/) to use as your production API key and copy it. Now we can set it in Heroku using the following command: `heroku config:set API_TOKEN=paste-your-token-here`   
+4. Test that the API Key works in Postman, by entering `https://NAME-OF-APP-HERE.herokuapp.com/test`, and change the Headers to include: Key: `Authorization`, Value `Bearer UUID-Random-Text-Random-Numbers`
+5. You can view the API Key on the heroku website, click on the name of your heroku app, go to settings, scroll down to Config Vars
+
+
+
+
+
 ### IV. Create, Migrate and Seed Local Database
 NOTE: The steps below create, migrate, and seed a database based off the default files from boilerplate-api. You will need to create new files for migrations and seeds, as well as /src folders, with router and service files, for each table.  
 1. Open psql, `psql postgres`
@@ -62,13 +74,7 @@ NOTE: The steps below create, migrate, and seed a database based off the default
 5. Verify HTTP requests on local machine by opening browser and typing http://localhost:9000/articles, http://localhost:9000/users results should be presented in JSON format
 
 
-### IV. Deploy API to Heroku and Set API Token 
-1. When your new project is ready for deployment, add a new Heroku application with `heroku create`.   
-*This will make a new git remote called "heroku"
-2. Deploy to heroku with `git push heroku master`
-3. Generate a new UUID (https://www.uuidgenerator.net/) to use as your production API key and copy it. Now we can set it in Heroku using the following command: `heroku config:set API_TOKEN=paste-your-token-here`   
-4. Test that the API Key works in Postman, by entering `https://NAME-OF-APP-HERE.herokuapp.com/test`, and change the Headers to include: Key: `Authorization`, Value `Bearer UUID-Random-Text-Random-Numbers`
-5. You can view the API Key on the heroku website, click on the name of your heroku app, go to settings, scroll down to Config Vars
+
 
 ### V. Provision, Deploy and Migrate Database to Heroku
 1. Provision the database, type `heroku addons:create heroku-postgresql:hobby-dev`.  

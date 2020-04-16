@@ -1,7 +1,7 @@
 {
-  "name": "boilerplate-api",
+  "name": "green-dragons-api",
   "version": "1.0.0",
-  "description": "Boilerplate API",
+  "description": "API for green dragons",
   "main": "index.js",
   "scripts": {
     "test": "mocha --require test/setup.js",
