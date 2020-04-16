@@ -1,6 +1,6 @@
 BEGIN;
-\i /Users/Drew/Projects/boilerplate-api/seeds/001.seed.article.sql
-\i /Users/Drew/Projects/boilerplate-api/seeds/002.seed.user.sql
+\i /Users/Drew/Projects/green-dragons-api/seeds/001.seed.green_dragons_user.sql
+\i /Users/Drew/Projects/green-dragons-api/seeds/002.seed.user.sql
 
 COMMIT;
 

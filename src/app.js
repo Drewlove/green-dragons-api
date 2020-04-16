@@ -11,6 +11,8 @@ const usersRouter = require('./users/users-router')
 const articlesRouter = require('./articles/articles-router')
 const commentsRouter = require('./comments/comments-router')
 
+const studentsRouter = require('./students/router')
+
 const app = express()
 
 app.use(morgan((NODE_ENV === 'production') ? 'tiny' : 'common', {
@@ -28,6 +30,8 @@ app.use(validateBearerToken)
 app.use('/api/users', usersRouter)
 app.use('/api/articles', articlesRouter)
 app.use('/api/comments', commentsRouter)
+
+app.user('/api/students', studentsRouter)
 
 //Open heroku url in browser, see if {ok: true} appears
 app.get('/TEST', (req, res) => {
