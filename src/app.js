@@ -31,7 +31,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/articles', articlesRouter)
 app.use('/api/comments', commentsRouter)
 
-app.user('/api/students', studentsRouter)
+app.use('/api/students', studentsRouter)
 
 //Open heroku url in browser, see if {ok: true} appears
 app.get('/TEST', (req, res) => {
