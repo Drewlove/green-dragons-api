@@ -9,10 +9,10 @@ const jsonParser = express.json()
 
 //REWRITE, include each row from table 
 const serializeRow = row => ({
-  student_id: row.student_id,
-  first_name: xss(row.first_name),
-  last_name: xss(row.last_name),
-  birth_date: xss(row.birth_date)
+  // student_id: row.student_id,
+  // first_name: xss(row.first_name),
+  // last_name: xss(row.last_name),
+  // birth_date: xss(row.birth_date)
 })
 
 endpointRouter
@@ -21,7 +21,7 @@ endpointRouter
     const knexInstance = req.app.get('db')
     endpointService.getAllRows(knexInstance)
       .then(rows => {
-        logger.info(rows)
+        console.log(rows)
         res.json(rows.map(serializeRow))
       })
       .catch(next)
