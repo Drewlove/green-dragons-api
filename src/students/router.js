@@ -13,7 +13,6 @@ const serializeRow = row => ({
   first_name: xss(row.first_name),
   last_name: xss(row.last_name),
   birth_date: xss(row.birth_date), 
-  hair_color: xss(row.hair_color)
 })
 
 endpointRouter
