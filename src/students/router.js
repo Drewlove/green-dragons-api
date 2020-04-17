@@ -2,6 +2,7 @@ const path = require('path')
 const express = require('express')
 const xss = require('xss')
 const endpointService = require('./service')
+const logger = require('../logger')
 
 const endpointRouter = express.Router()
 const jsonParser = express.json()
@@ -20,6 +21,7 @@ endpointRouter
     const knexInstance = req.app.get('db')
     endpointService.getAllRows(knexInstance)
       .then(rows => {
+        logger.info(rows)
         res.json(rows.map(serializeRow))
       })
       .catch(next)

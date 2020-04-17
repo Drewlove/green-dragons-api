@@ -41,9 +41,6 @@ Complete the following steps to start a new project (NEW-PROJECT-NAME):
 ### V. Local Dev: Writing and Testing Endpoints
 
 
-
-
-
 ### IV. Create, Migrate and Seed Local Database
 NOTE: The steps below create, migrate, and seed a database based off the default files from boilerplate-api. You will need to create new files for migrations and seeds, as well as /src folders, with router and service files, for each table.  
 1. Open psql, `psql postgres`

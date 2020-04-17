@@ -1,12 +1,1 @@
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /test","level":"error"}
-{"message":"Unauthorized request to path: /","level":"error"}
-{"message":"Unauthorized request to path: /students","level":"error"}
-{"message":"Unauthorized request to path: /students","level":"error"}
+{"message":[{"student_id":1,"first_name":"Mike","last_name":"Cermak","birth_date":"1980-09-01T04:00:00.000Z"},{"student_id":2,"first_name":"Ale","last_name":"Cabrera-Mondragon","birth_date":"1994-06-01T04:00:00.000Z"},{"student_id":3,"first_name":"Drew","last_name":"Love","birth_date":"1984-09-11T04:00:00.000Z"}],"level":"info"}
