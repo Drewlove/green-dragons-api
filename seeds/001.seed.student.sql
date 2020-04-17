@@ -1,11 +1,11 @@
-TRUNCATE student RESTART IDENTITY CASCADE; 
+TRUNCATE TABLE student RESTART IDENTITY CASCADE;
 
-INSERT INTO student(last_name, first_name)
-
+INSERT INTO student(first_name, last_name, birth_date)
 VALUES
-('Drew', 'Love'),
-('Ryan', 'Love'),
-('Marla', 'Love'),
-('David', 'Love')
+('Mike', 'Cermak', '1980-09-01'),
+('Ale', 'Cabrera-Mondragon', '1994-06-01'),
+('Drew', 'Love', '1984-09-11');
 
--- psql -f ~/Projects/green-dragons-api/seeds/001.seed.student.sql green_dragons;
+
+-- SEED SCRIPT
+-- psql -f ~/Projects/A1-Review/green-dragons-api/seeds/001.users/seed.student.sql green_dragons;

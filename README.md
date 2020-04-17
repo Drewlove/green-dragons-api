@@ -88,6 +88,10 @@ NOTE: The steps below create, migrate, and seed a database based off the default
 4. Migrate the database, `npm run migrate:production`.  
 *the boilerplate-api project also has a `"predeploy": "npm audit && npm run migrate:production"` script, so typing `npm run deploy` will also migrate the database to heroku
 
+### VI. Updating Database
+1. To retain the database, but drop all tables and then recreate the schema, type the following: `DROP SCHEMA public CASCADE;`, followed by `CREATE SCHEMA public;`
+
+
 
 
 

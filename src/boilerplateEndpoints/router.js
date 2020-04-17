@@ -96,7 +96,7 @@ endpointRouter
     endpointService.updateRow(
       req.app.get('db'),
       req.params.row_id,
-      userToUpdate
+      rowToUpdate
     )
       .then(numRowsAffected => {
         res.status(204).end()
