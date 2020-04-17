@@ -12,7 +12,8 @@ const serializeRow = row => ({
   student_id: row.student_id,
   first_name: xss(row.first_name),
   last_name: xss(row.last_name),
-  birth_date: xss(row.birth_date)
+  birth_date: xss(row.birth_date), 
+  hair_color: xss(row.hair_color)
 })
 
 endpointRouter
@@ -21,6 +22,7 @@ endpointRouter
     const knexInstance = req.app.get('db')
     endpointService.getAllRows(knexInstance)
       .then(rows => {
+        logger.info(rows)
         res.json(rows.map(serializeRow))
       })
       .catch(next)
