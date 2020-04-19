@@ -25,8 +25,8 @@ endpointRouter
   })
   .post(jsonParser, (req, res, next) => {
     //REWRITE, include each column name
-    const { first_name, last_name } = req.body
-    const newRow = { first_name, last_name }
+    const { first_name, last_name} = req.body
+    const newRow = { first_name, last_name}
 
     for (const [key, value] of Object.entries(newRow))
       if (value == null)
@@ -36,7 +36,7 @@ endpointRouter
 
     endpointService.insertRow(
       req.app.get('db'),
-      newUser
+      newRow
     )
       .then(row => {
         res

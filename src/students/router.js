@@ -38,7 +38,7 @@ endpointRouter
 
     endpointService.insertRow(
       req.app.get('db'),
-      newUser
+      newRow
     )
       .then(row => {
         res
