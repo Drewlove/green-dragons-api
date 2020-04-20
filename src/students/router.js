@@ -21,7 +21,6 @@ endpointRouter
     const knexInstance = req.app.get('db')
     endpointService.getAllRows(knexInstance)
       .then(rows => {
-        logger.info(rows)
         res.json(rows.map(serializeRow))
       })
       .catch(next)
@@ -83,8 +82,8 @@ endpointRouter
   })
   .patch(jsonParser, (req, res, next) => {
     //REWRITE, use table's column names
-    const { first_name, last_name} = req.body
-    const rowToUpdate = { first_name, last_name }
+    const {first_name, last_name, birth_date} = req.body
+    const rowToUpdate = {first_name, last_name, birth_date }
 
     //REWRITE, error.message to include column names that would be included in an update
     const numberOfValues = Object.values(rowToUpdate).filter(Boolean).length

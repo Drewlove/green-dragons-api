@@ -7,11 +7,11 @@ const service = {
         .select('*')
         .from(tableName)
     }, 
-    getById(knex, id){
+    getById(knex, row_id){
         return knex
         .from(tableName)
         .select('*')
-        .where('student_id', id)
+        .where('student_id', row_id)
         .first()
     }, 
     insertRow(knex, newRow){
@@ -23,9 +23,9 @@ const service = {
             return rows[0]
         })
     }, 
-    updateRow(knex, id, newFields){
+    updateRow(knex, row_id, newFields){
         return knex(tableName)
-        .where({id})
+        .where('student_id', row_id)
         .update(newFields)
     }, 
     deleteRow(knex, id){
