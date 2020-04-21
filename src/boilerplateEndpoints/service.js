@@ -25,12 +25,12 @@ const service = {
     }, 
     updateRow(knex, id, newFields){
         return knex(tableName)
-        .where({id})
+        .where('row_id', id)
         .update(newFields)
     }, 
     deleteRow(knex, id){
         return knex(tableName)
-        .where({id})
+        .where('row_id', id)
         .delete()
     }
 }
