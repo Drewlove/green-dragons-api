@@ -28,9 +28,9 @@ const service = {
         .where('student_id', row_id)
         .update(newFields)
     }, 
-    deleteRow(knex, id){
+    deleteRow(knex, row_id){
         return knex(tableName)
-        .where({id})
+        .where('student_id', row_id)
         .delete()
     }
 }
