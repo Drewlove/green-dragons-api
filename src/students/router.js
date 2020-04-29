@@ -17,7 +17,8 @@ const serializeRow = row => ({
 
 const table = {
   name: 'student', 
-  columns: ['first_name', 'last_name', 'birth_date']
+  columns: ['first_name', 'last_name', 'birth_date'],
+  rowId: 'student_id'
 }
 
 endpointRouter
@@ -47,8 +48,7 @@ endpointRouter
       .then(row => {
         res
           .status(201)
-          //REWRITE, row.student_id to column name of row's id
-          .location(path.posix.join(req.originalUrl, `/${row.student_id}`))
+          .location(path.posix.join(req.originalUrl, `/${row[table.rowId]}`))
           .json(serializeRow(row))
       })
       .catch(next)
@@ -90,7 +90,6 @@ endpointRouter
     const {first_name, last_name, birth_date} = req.body
     const rowToUpdate = {first_name, last_name, birth_date }
 
-    //REWRITE, error.message to include column names that would be included in an update
     const numberOfValues = Object.values(rowToUpdate).filter(Boolean).length
     if (numberOfValues === 0)
       return res.status(400).json({
