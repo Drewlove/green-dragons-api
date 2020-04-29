@@ -15,6 +15,8 @@ const serializeRow = row => ({
   birth_date: xss(row.birth_date), 
 })
 
+const tableName = 'student'
+
 endpointRouter
   .route('/')
   .get((req, res, next) => {
@@ -59,7 +61,7 @@ endpointRouter
       .then(row => {
         if (!row) {
           return res.status(404).json({
-            error: { message: `Row doesn't exist` }
+            error: { message: `Row from table: '${tableName}' doesn't exist`}
           })
         }
         res.row = row
