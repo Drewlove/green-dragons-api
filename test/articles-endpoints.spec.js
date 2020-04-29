@@ -255,7 +255,7 @@
 //       it(`responds with 404`, () => {
 //         const articleId = 123456
 //         return supertest(app)
-//           .delete(`/api/articles/${articleId}`)
+//           .patch(`/api/articles/${articleId}`)
 //           .expect(404, { error: { message: `Article doesn't exist` } })
 //       })
 //     })

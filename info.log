@@ -1,4 +1,1 @@
-{"message":"Unauthorized request to path: /api/students/1","level":"error"}
-{"message":"Unauthorized request to path: /api/students","level":"error"}
-{"message":"Unauthorized request to path: /api/students","level":"error"}
-{"message":"Unauthorized request to path: /api/students","level":"error"}
+{"message":{"req":{"method":"GET","url":"http://127.0.0.1:61106/api/students","headers":{"user-agent":"node-superagent/3.8.3","authorization":"Bearer 5abc66fb-8f77-4033-8b39-6d5fd474fa58"}},"header":{"access-control-allow-origin":"*","x-dns-prefetch-control":"off","x-frame-options":"SAMEORIGIN","strict-transport-security":"max-age=15552000; includeSubDomains","x-download-options":"noopen","x-content-type-options":"nosniff","x-xss-protection":"1; mode=block","content-type":"application/json; charset=utf-8","content-length":"2","etag":"W/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\"","date":"Wed, 29 Apr 2020 18:00:02 GMT","connection":"close"},"status":200,"text":"[]"},"level":"info"}

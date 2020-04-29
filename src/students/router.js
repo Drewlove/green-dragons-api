@@ -15,7 +15,10 @@ const serializeRow = row => ({
   birth_date: xss(row.birth_date), 
 })
 
-const tableName = 'student'
+const table = {
+  name: 'student', 
+  columns: ['first_name', 'last_name', 'birth_date']
+}
 
 endpointRouter
   .route('/')
@@ -61,7 +64,7 @@ endpointRouter
       .then(row => {
         if (!row) {
           return res.status(404).json({
-            error: { message: `Row from table: '${tableName}' doesn't exist`}
+            error: { message: `Row from table: '${table.name}' doesn't exist`}
           })
         }
         res.row = row
@@ -92,7 +95,7 @@ endpointRouter
     if (numberOfValues === 0)
       return res.status(400).json({
         error: {
-          message: `Request body content be either 'fullname', 'username', 'password' or 'nickname'`
+          message: `Request body content must contain at least one of the following: ${table.columns}`
         }
       })
 

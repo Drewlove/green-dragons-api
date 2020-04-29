@@ -1,16 +1,18 @@
 const knex = require('knex')
 const app = require('../src/app')
-const {makeStudentsArray, makeMaliciousStudent} = require('./students.fixtures')
+const {makeTestRows, makeMaliciousRow} = require('./students.fixtures')
 const logger = require('../src/logger')
-
-// const API_TOKEN = process.env.API_TOKEN
 
 const API_TOKEN = '5abc66fb-8f77-4033-8b39-6d5fd474fa58'
 
+const table = {
+    name: 'student',
+    endpoint: 'students', 
+    columns: ['first_name', 'last_name', 'birth_date'], 
+    rowId: 'student_id'
+  }
 
-const tableName = 'student'
-
-describe('Users Endpoints', function() {
+describe(`${table.name} endpoints`, function() {
   let db
   
   before('make knex instance', () => {
@@ -22,291 +24,297 @@ describe('Users Endpoints', function() {
     })
     
     after('disconnect from db', () => db.destroy())
-    before('clean the table', () => db.raw('TRUNCATE table student RESTART IDENTITY CASCADE'))
+    before('clean the table', () => db.raw(`TRUNCATE table ${table.name} RESTART IDENTITY CASCADE`))
 
-    afterEach('cleanup',() => db.raw('TRUNCATE table student RESTART IDENTITY CASCADE'))
+    afterEach('cleanup',() => db.raw(`TRUNCATE table ${table.name} RESTART IDENTITY CASCADE`))
 
-    describe(`GET /api/students`, () => {
-        context(`Given no students`, () => {
+    describe(`GET /api/${table.endpoint}`, () => {
+        context(`Given no rows in table ${table.name}`, () => {
             it(`responds with 200 and an empty list`, () => {
                 return supertest(app)
-                .get('/api/students')
+                .get(`/api/${table.endpoint}`)
                 .set('Authorization', `Bearer ${API_TOKEN}`)
                 .expect(200, [])
             })
         })
     })
     
-    context('Given there are students in the database', () => {
-        const testStudents = makeStudentsArray();
-        
-        beforeEach('insert students', () => {
+    context(`Given there are rows in table ${table.name} in the database`, () => {
+        const testRows = makeTestRows();  
+        beforeEach('insert rows', () => {
             return db
-            .into('student')
-            .insert(testStudents)
+            .into(table.name)
+            .insert(testRows)
         })
-        
-        it('responds with 200 and all of the students', () => {
+        it('responds with 200 and all of the rows', () => {
             return supertest(app)
-            .get('/api/students')
+            .get(`/api/${table.endpoint}`)
             .set('Authorization', `Bearer ${API_TOKEN}`)
             .expect(200)
             .then(res => {
-                const resReformattedDates = res.body.map(student => {
-                    return  {...student, birth_date: new Date(student.birth_date)}
+                const resReformattedDates = res.body.map(row => {
+                    return  {...row, birth_date: new Date(row.birth_date)}
                 })
-                expect(testStudents).to.eql(resReformattedDates)
+                expect(testRows).to.eql(resReformattedDates)
             })
         })
     })
     
     context(`Given an XSS attack`, () => {
-        const {maliciousStudent, expectedStudent} = makeMaliciousStudent()
-        beforeEach('insert malicious student', () => {
+        const {maliciousRow, expectedRow} = makeMaliciousRow()
+        beforeEach('insert malicious row', () => {
             return db
-            .into('student')
-            .insert(maliciousStudent)
+            .into(table.name)
+            .insert(maliciousRow)
         })
-        
+
         it('removes XSS attack content', () => {
             return supertest(app)
-            .get(`/api/students`)
+            .get(`/api/${table.endpoint}`)
             .set('Authorization', `Bearer ${API_TOKEN}`)
             .expect(200)
             .expect(res => {
-                expect(res.body[0].first_name).to.eql(expectedStudent.first_name)
+                expect(res.body[0].first_name).to.eql(expectedRow.first_name)
             })
         })
     })
     
-    describe(`GET /api/students/:rowId`, () => {
-        context(`Given no students`, () => {
+    describe(`GET /api/${table.endpoint}/:rowId`, () => {
+        context(`Given no rows`, () => {
             it(`responds with 404`, () => {
                 const rowId = 123456
                 return supertest(app)
-                .get(`/api/students/${rowId}`)
+                .get(`/api/${table.endpoint}/${rowId}`)
                 .set('Authorization', `Bearer ${API_TOKEN}`)
-                .expect(404, { error: { message: `Row from table: '${tableName}' doesn't exist`}})
+                .expect(404, { error: { message: `Row from table: '${table.name}' doesn't exist`}})
             })
         })
         
-        context('Given there are students in the database', () => {
-            const testStudents = makeStudentsArray();
-            
-            beforeEach('insert students', () => {
+        context('Given there are rows in the database', () => {
+            const testRows = makeTestRows();
+            beforeEach('insert rows', () => {
                 return db
-                .into('student')
-                .insert(testStudents)
+                .into(table.name)
+                .insert(testRows)
             })
-            
-            it('responds with 200 and the specified student', () => {
-                const studentId = 1
+            it('responds with 200 and the specified row', () => {
+                const rowId = 1
                 return supertest(app)
-                .get(`/api/students/${studentId}`)
+                .get(`/api/${table.endpoint}/${rowId}`)
                 .set('Authorization', `Bearer ${API_TOKEN}`)
                 .expect(200)
                 .then(res => {
                     const resReformattedDate = {...res.body, birth_date: new Date(res.body.birth_date)}
-                    expect(resReformattedDate).to.eql(testStudents[studentId-1])
+                    expect(resReformattedDate).to.eql(testRows[rowId-1])
                 })
             })
         })
     })
     
-    context(`Given an XSS attack student`, () => {
-        const { maliciousStudent, expectedStudent } = makeMaliciousStudent()
-        
-        beforeEach('insert malicious article', () => {
+    context(`Given an XSS attack row`, () => {
+        const { maliciousRow, expectedRow } = makeMaliciousRow()        
+        beforeEach('insert malicious row', () => {
             return db
-            .into('student')
-            .insert(maliciousStudent)
+            .into(table.name)
+            .insert(maliciousRow)
         })
-        
         it('removes XSS attack content', () => {
             return supertest(app)
-            .get(`/api/students/${maliciousStudent.student_id}`)
+            .get(`/api/${table.endpoint}/${maliciousRow[table.rowId]}`)
             .set('Authorization', `Bearer ${API_TOKEN}`)
             .expect(200)
             .expect(res => {
-                expect(res.body.first_name).to.eql(expectedStudent.first_name)
+                expect(res.body.first_name).to.eql(expectedRow.first_name)
             })
         })
     })
 
-      describe(`POST /api/students`, () => {
-        it(`creates a student, responding with 201 and the new student`, () => {
-          const newStudent = {
+      describe(`POST /api/${table.endpoint}`, () => {
+        it(`creates a row, responding with 201 and the new row`, () => {
+          const newRow = {
             first_name: 'Bob', 
             last_name: 'Bobberson', 
             birth_date: new Date('1982-11-14'),
           }
           return supertest(app)
-            .post('/api/students')
+            .post(`/api/${table.endpoint}`)
             .set('Authorization', `Bearer ${API_TOKEN}`)
-            .send(newStudent)
+            .send(newRow)
             .expect(201)
             .expect(res => {
                 const resBirthdate = new Date(res.body.birth_date)
-              expect(res.body.first_name).to.eql(newStudent.first_name)
-              expect(res.body.last_name).to.eql(newStudent.last_name)
-              expect(resBirthdate).to.eql(newStudent.birth_date)
-              expect(res.body).to.have.property('student_id')
-              expect(res.headers.location).to.eql(`/api/students/${res.body.student_id}`)
+              expect(res.body.first_name).to.eql(newRow.first_name)
+              expect(res.body.last_name).to.eql(newRow.last_name)
+              expect(resBirthdate).to.eql(newRow.birth_date)
+              expect(res.body).to.have.property(`${table.rowId}`)
+              expect(res.headers.location).to.eql(`/api/${table.endpoint}/${res.body[table.rowId]}`)
             })
             .then(res =>
               supertest(app)
-                .get(`/api/students/${res.body.student_id}`)
+                .get(`/api/${table.endpoint}/${res.body[table.rowId]}`)
                 .set('Authorization', `Bearer ${API_TOKEN}`)
                 .expect(res.body)
             )
         })
 
-        const requiredFields = ['first_name', 'last_name', 'birth_date']
-
-        requiredFields.forEach(field => {
-          const newStudent = {
+        table.columns.forEach(field => {
+          const newRow = {
             first_name: 'Testy',
             last_name: 'New Name',
             birth_date: '01-01-1980'
           }
 
           it(`responds with 400 and an error message when the '${field}' is missing`, () => {
-            delete newStudent[field]
-
+            delete newRow[field]
             return supertest(app)
-              .post('/api/students')
+              .post(`/api/${table.endpoint}`)
               .set('Authorization', `Bearer ${API_TOKEN}`)
-              .send(newStudent)
+              .send(newRow)
               .expect(400, {
                 error: { message: `Missing '${field}' in request body` }
               })
           })
         })
-
         it('removes XSS attack content from response', () => {
-          const { maliciousStudent, expectedStudent } = makeMaliciousStudent()
+          const { maliciousRow, expectedRow } = makeMaliciousRow()
           return supertest(app)
-            .post(`/api/students`)
+            .post(`/api/${table.endpoint}`)
             .set('Authorization', `Bearer ${API_TOKEN}`)
-            .send(maliciousStudent)
+            .send(maliciousRow)
             .expect(201)
             .expect(res => {
-              expect(res.body.first_name).to.eql(expectedStudent.first_name)
+              expect(res.body.first_name).to.eql(expectedRow.first_name)
             })
         })
       })
 
-      describe(`DELETE /api/students/:student_id`, () => {
-        context(`Given no students`, () => {
+      describe(`DELETE /api/${table.name}/:rowId`, () => {
+        context(`Given no rows`, () => {
           it(`responds with 404`, () => {
-            const studentId = 123456
+            const testRowId = 123456
             return supertest(app)
-              .delete(`/api/students/${studentId}`)
+              .delete(`/api/${table.endpoint}/${testRowId}`)
               .set('Authorization', `Bearer ${API_TOKEN}`)
-              .expect(404, { error: { message: `Row from table: '${tableName}' doesn't exist`}})
+              .expect(404, 
+                {error: { message: `Row from table: '${table.name}' doesn't exist`}}
+                )
           })
         })
 
-    //CLOSING BRACKETS FOR FUNCTION
-    //
+        context('Given there are rows in table', () => {
+          const testRows = makeTestRows();
+
+          beforeEach('insert rows', () => {
+              return db
+              .into(table.name)
+              .insert(testRows)
+            })
+
+          it('responds with 204 and removes the row', () => {
+            const idToRemove = 1
+            return supertest(app)
+              .delete(`/api/${table.endpoint}/${idToRemove}`)
+              .set('Authorization', `Bearer ${API_TOKEN}`)
+              .expect(204)
+              .then(res => {
+                const expectedRows = testRows.filter(row => row[table.rowId]!== idToRemove)
+                supertest(app)
+                .get(`/api/${table.endpoint}`)
+                .expect(expectedRows)
+              })
+          })
+        })
     })
-})
 
-    //     context('Given there are students in the database', () => {
-    //       const testStudents = makeStudentsArray();
+      describe(`PATCH /api/${table.endpoint}/:rowId`, () => {
+        context(`Given no rows`, () => {
+          it(`responds with 404`, () => {
+            const rowId = 123456
+            return supertest(app)
+              .patch(`/api/${table.endpoint}/${rowId}`)
+              .set('Authorization', `Bearer ${API_TOKEN}`)
+              .expect(404, { error: { message: `Row from table: '${table.name}' doesn't exist`}})
+          })
+        })
 
-    //       it('responds with 204 and removes the student', () => {
-    //         const idToRemove = 2
-    //         const expectedStudents = testStudents.filter(student => student.student_id !== idToRemove)
-    //         return supertest(app)
-    //           .delete(`/api/students/${idToRemove}`)
-    //           .expect(204)
-    //           .then(res =>
-    //             supertest(app)
-    //               .get(`/api/students`)
-    //               .expect(expectedStudents)
-    //           )
-    //       })
-    //     })
-    //   })
+        context('Given there are rows in the database', () => {
+          const testRows = makeTestRows();
 
-    //   describe(`PATCH /api/students/:student_id`, () => {
-    //     context(`Given no students`, () => {
-    //       it(`responds with 404`, () => {
-    //         const studentId = 123456
-    //         return supertest(app)
-    //           .delete(`/api/students/${studentId}`)
-    //           .expect(404, { error: { message: `Student doesn't exist` } })
-    //       })
-    //     })
+          beforeEach('insert rows', () => {
+            return db
+              .into(table.name)
+              .insert(testRows)
+          })
 
-    //     context('Given there are students in the database', () => {
-    //       const testStudents = makeStudentsArray();
-    //       const testStudents = makeStudentssArray()
+          it('responds with 204 and updates the row', () => {
+            const idToUpdate = 2
+            const updatedRow = {
+                first_name: 'New First Name',
+                last_name: 'New Last Name',
+                birth_date: new Date('01-01-1900')
+            }
+            const expectedRow = {
+              ...testRows[idToUpdate - 1],
+              ...updatedRow
+            }
 
-    //       beforeEach('insert students', () => {
-    //         return db
-    //           .into('student')
-    //           .insert(testStudents)
-    //       })
+            return supertest(app)
+              .patch(`/api/${table.endpoint}/${idToUpdate}`)
+              .send(updatedRow)
+              .set('Authorization', `Bearer ${API_TOKEN}`)
+              .expect(204)
+              .then(res => {
+                supertest(app)
+                  .get(`/api/${table.endpoint}/${idToUpdate}`)
+                  .set('Authorization', `Bearer ${API_TOKEN}`)
+                  .then(res => {
+                      const resReformattedDate = {...res.body, birth_date : new Date(res.body.birth_date)}
+                      expect(expectedRow).to.eql(resReformattedDate)  
+                  })
+              })
+          })
 
-    //       it('responds with 204 and updates the student', () => {
-    //         const idToUpdate = 2
-    //         const updatedStudent = {
-    //             first_name: 'New First Name',
-    //             last_name: 'New Last Name',
-    //             birth_date: '01-01-1900'
-    //         }
-    //         const expectedStudent = {
-    //           ...testStudent[idToUpdate - 1],
-    //           ...updatedStudent
-    //         }
-    //         return supertest(app)
-    //           .patch(`/api/students/${idToUpdate}`)
-    //           .send(updatedStudent)
-    //           .expect(204)
-    //           .then(res =>
-    //             supertest(app)
-    //               .get(`/api/students/${idToUpdate}`)
-    //               .expect(expectedStudent)
-    //           )
-    //       })
+          it(`responds with 400 when no required fields supplied`, () => {
+            const idToUpdate = 2
+            return supertest(app)
+              .patch(`/api/${table.endpoint}/${idToUpdate}`)
+              .send({ irrelevantField: 'foo' })
+              .set('Authorization', `Bearer ${API_TOKEN}`)
+              .expect(400, {
+                error: {
+                    message: `Request body content must contain at least one of the following: ${table.columns}`
+                }
+              })
+          })
 
-    //       it(`responds with 400 when no required fields supplied`, () => {
-    //         const idToUpdate = 2
-    //         return supertest(app)
-    //           .patch(`/api/students/${idToUpdate}`)
-    //           .send({ irrelevantField: 'foo' })
-    //           .expect(400, {
-    //             error: {
-    //               message: `Request body must content either 'first_name', 'last_name' or 'birth_date'`
-    //             }
-    //           })
-    //       })
+          it(`responds with 204 when updating only a subset of fields`, () => {
+            const idToUpdate = 2
+            const updatedRow = {
+                last_name: 'new last name',
+            }
+            const expectedRow = {
+                ...testRows[idToUpdate - 1],
+                ...updatedRow
+              }
 
-    //       it(`responds with 204 when updating only a subset of fields`, () => {
-    //         const idToUpdate = 2
-    //         const updatedStudent = {
-    //             last_name: 'new last name',
-    //         }
-    //         const expectedStudent = {
-    //             ...testStudent[idToUpdate - 1],
-    //             ...updatedStudent
-    //           }
-
-    //         return supertest(app)
-    //           .patch(`/api/studentss/${idToUpdate}`)
-    //           .send({
-    //             ...updatedStudent,
-    //             fieldToIgnore: 'should not be in GET response'
-    //           })
-    //           .expect(204)
-    //           .then(res =>
-    //             supertest(app)
-    //               .get(`/api/students/${idToUpdate}`)
-    //               .expect(expectedStudent)
-    //           )
-    //       })
-    //     })
-    //   })
-    // })
+            return supertest(app)
+              .patch(`/api/${table.endpoint}/${idToUpdate}`)
+              .set('Authorization', `Bearer ${API_TOKEN}`)
+              .send({
+                ...updatedRow,
+                fieldToIgnore: 'should not be in GET response'
+              })
+              .expect(204)
+              .then(res =>
+                supertest(app)
+                  .get(`/api/${table.endpoint}/${idToUpdate}`)
+                  .set('Authorization', `Bearer ${API_TOKEN}`)
+                  .then(res => {
+                    const resReformattedDate = {...res.body, birth_date : new Date(res.body.birth_date)}
+                    expect(expectedRow).to.eql(resReformattedDate)  
+                })
+              )
+          })
+        })
+      })
+    })
