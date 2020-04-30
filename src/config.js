@@ -1,5 +1,5 @@
 module.exports = {
-    CLIENT_ORIGIN: "https://green-dragons-client.now.sh",
+    CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || "https://green-dragons-client.now.sh",
     PORT: process.env.PORT || 9000, 
     NODE_ENV: process.env.NODE_ENV || "development",
     API_TOKEN: process.env.API_TOKEN || 'dummy-api-token',
