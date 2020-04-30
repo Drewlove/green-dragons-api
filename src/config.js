@@ -1,4 +1,5 @@
 module.exports = {
+    CLIENT_ORIGIN: process.env.LOCAL_HOST,
     PORT: process.env.PORT || 9000, 
     NODE_ENV: process.env.NODE_ENV || "development",
     API_TOKEN: process.env.API_TOKEN || 'dummy-api-token',
