@@ -80,83 +80,83 @@ describe(`${table.name} endpoints`, function() {
     })
     
     describe(`GET /api/${table.endpoint}/:rowId`, () => {
-        context(`Given no rows`, () => {
-            it(`responds with 404`, () => {
-                const rowId = 123456
-                return supertest(app)
-                .get(`/api/${table.endpoint}/${rowId}`)
-                .set('Authorization', `Bearer ${API_TOKEN}`)
-                .expect(404, { error: { message: `Row from table: '${table.name}' doesn't exist`}})
-            })
+      context(`Given no rows`, () => {
+        it(`responds with 404`, () => {
+          const rowId = 123456
+          return supertest(app)
+          .get(`/api/${table.endpoint}/${rowId}`)
+          .set('Authorization', `Bearer ${API_TOKEN}`)
+          .expect(404, { error: { message: `Row from table: '${table.name}' doesn't exist`}})
         })
-        
-        context('Given there are rows in the database', () => {
-            const testRows = makeTestRows();
-            beforeEach('insert rows', () => {
-                return db
-                .into(table.name)
-                .insert(testRows)
-            })
-            it('responds with 200 and the specified row', () => {
-                const rowId = 1
-                return supertest(app)
-                .get(`/api/${table.endpoint}/${rowId}`)
-                .set('Authorization', `Bearer ${API_TOKEN}`)
-                .expect(200)
-                .then(res => {
-                    const resReformattedDate = {...res.body, birth_date: new Date(res.body.birth_date)}
-                    expect(resReformattedDate).to.eql(testRows[rowId-1])
-                })
-            })
+      })
+      
+      context('Given there are rows in the database', () => {
+        const testRows = makeTestRows();
+        beforeEach('insert rows', () => {
+          return db
+          .into(table.name)
+          .insert(testRows)
         })
+        it('responds with 200 and the specified row', () => {
+          const rowId = 1
+          return supertest(app)
+          .get(`/api/${table.endpoint}/${rowId}`)
+          .set('Authorization', `Bearer ${API_TOKEN}`)
+          .expect(200)
+          .then(res => {
+            const resReformattedDate = {...res.body, birth_date: new Date(res.body.birth_date)}
+            expect(resReformattedDate).to.eql(testRows[rowId-1])
+          })
+        })
+      })
     })
     
     context(`Given an XSS attack row`, () => {
-        const { maliciousRow, expectedRow } = makeMaliciousRow()        
-        beforeEach('insert malicious row', () => {
-            return db
-            .into(table.name)
-            .insert(maliciousRow)
+      const { maliciousRow, expectedRow } = makeMaliciousRow()        
+      beforeEach('insert malicious row', () => {
+        return db
+        .into(table.name)
+        .insert(maliciousRow)
+      })
+      it('removes XSS attack content', () => {
+        return supertest(app)
+        .get(`/api/${table.endpoint}/${maliciousRow[table.rowId]}`)
+        .set('Authorization', `Bearer ${API_TOKEN}`)
+        .expect(200)
+        .expect(res => {
+            expect(res.body.first_name).to.eql(expectedRow.first_name)
         })
-        it('removes XSS attack content', () => {
-            return supertest(app)
-            .get(`/api/${table.endpoint}/${maliciousRow[table.rowId]}`)
-            .set('Authorization', `Bearer ${API_TOKEN}`)
-            .expect(200)
-            .expect(res => {
-                expect(res.body.first_name).to.eql(expectedRow.first_name)
-            })
-        })
+      })
     })
-
-      describe(`POST /api/${table.endpoint}`, () => {
-        it(`creates a row, responding with 201 and the new row`, () => {
-          const newRow = {
-            first_name: 'Bob', 
-            last_name: 'Bobberson', 
-            birth_date: new Date('1982-11-14'),
-          }
-          return supertest(app)
-            .post(`/api/${table.endpoint}`)
-            .set('Authorization', `Bearer ${API_TOKEN}`)
-            .send(newRow)
-            .expect(201)
-            .expect(res => {
-                const resBirthdate = new Date(res.body.birth_date)
-              expect(res.body.first_name).to.eql(newRow.first_name)
-              expect(res.body.last_name).to.eql(newRow.last_name)
-              expect(resBirthdate).to.eql(newRow.birth_date)
-              expect(res.body).to.have.property(`${table.rowId}`)
-              expect(res.headers.location).to.eql(`/api/${table.endpoint}/${res.body[table.rowId]}`)
-            })
-            .then(res =>
-              supertest(app)
-                .get(`/api/${table.endpoint}/${res.body[table.rowId]}`)
-                .set('Authorization', `Bearer ${API_TOKEN}`)
-                .expect(res.body)
-            )
+    
+    describe(`POST /api/${table.endpoint}`, () => {
+      it(`creates a row, responding with 201 and the new row`, () => {
+        const newRow = {
+          first_name: 'Bob', 
+          last_name: 'Bobberson', 
+          birth_date: new Date('1982-11-14'),
+        }
+        return supertest(app)
+        .post(`/api/${table.endpoint}`)
+        .set('Authorization', `Bearer ${API_TOKEN}`)
+        .send(newRow)
+        .expect(201)
+        .expect(res => {
+          const resBirthdate = new Date(res.body.birth_date)
+          expect(res.body.first_name).to.eql(newRow.first_name)
+          expect(res.body.last_name).to.eql(newRow.last_name)
+          expect(resBirthdate).to.eql(newRow.birth_date)
+          expect(res.body).to.have.property(`${table.rowId}`)
+          expect(res.headers.location).to.eql(`/api/${table.endpoint}/${res.body[table.rowId]}`)
         })
-
+        .then(res =>
+          supertest(app)
+          .get(`/api/${table.endpoint}/${res.body[table.rowId]}`)
+          .set('Authorization', `Bearer ${API_TOKEN}`)
+          .expect(res.body)
+          )
+        })
+        
         table.columns.forEach(field => {
           const newRow = {
             first_name: 'Testy',
