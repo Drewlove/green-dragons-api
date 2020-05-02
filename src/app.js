@@ -8,6 +8,7 @@ const validateBearerToken = require('./validate-bearer-token')
 
 const studentsRouter = require('./students/router')
 const challengesRouter = require('./challenges/router')
+const communitiesRouter = require('./communities/router')
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.use(helmet())
 app.use(validateBearerToken)
 app.use('/api/students', studentsRouter)
 app.use('/api/challenges', challengesRouter)
+app.use('/api/communities', communitiesRouter)
 //other routers go here
 
 //Open heroku url in browser, see if {ok: true} appears
