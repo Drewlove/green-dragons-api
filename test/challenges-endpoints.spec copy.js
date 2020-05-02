@@ -2,8 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const {makeTestRows, makeTestRow, makeMaliciousRow} = require('./challenges.fixtures')
 const logger = require('../src/logger')
-
-const API_TOKEN = '5abc66fb-8f77-4033-8b39-6d5fd474fa58'
+const API_TOKEN = process.env.API_TOKEN
 
 const table = {
   name: 'challenge', 
