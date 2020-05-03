@@ -10,7 +10,7 @@ const service = {
         return knex
         .from(tableName)
         .select('*')
-        .where('challenge_id', row_id)
+        .where(`${tableName}_id`, row_id)
         .first()
     }, 
     insertRow(knex, newRow){
@@ -24,12 +24,12 @@ const service = {
     }, 
     updateRow(knex, row_id, newFields){
         return knex(tableName)
-        .where('challenge_id', row_id)
+        .where(`${tableName}_id`, row_id)
         .update(newFields)
     }, 
     deleteRow(knex, row_id){
         return knex(tableName)
-        .where('challenge_id', row_id)
+        .where(`${tableName}_id`, row_id)
         .delete()
     }
 }

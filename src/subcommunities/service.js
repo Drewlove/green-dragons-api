@@ -1,5 +1,5 @@
 //change tableName, getById include actual column name of row id, example 'student_id'
-const tableName = 'student'
+const tableName = 'subcommunity'
 
 const service = {
     getAllRows(knex){
