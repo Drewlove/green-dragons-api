@@ -7,7 +7,6 @@ const logger = require('../logger')
 const endpointRouter = express.Router()
 const jsonParser = express.json()
 
-//REWRITE, include each row from table 
 const serializeRow = row => ({
   subcommunity_id: row.subcommunity_id,
   community_id: row.community_id,
@@ -109,3 +108,11 @@ endpointRouter
   })
 
 module.exports = endpointRouter
+
+
+
+
+
+
+
+
