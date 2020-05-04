@@ -7,6 +7,7 @@ const logger = require('../logger')
 const endpointRouter = express.Router()
 const jsonParser = express.json()
 
+
 const serializeRow = row => ({
   subcommunity_id: row.subcommunity_id,
   community_id: row.community_id,
@@ -103,6 +104,17 @@ endpointRouter
     )
       .then(numRowsAffected => {
         res.status(204).end()
+      })
+      .catch(next)
+  })
+
+  endpointRouter
+  .route('/communities/:parent_row_id')
+  .get((req, res, next) => {
+    const knexInstance = req.app.get('db')
+    endpointService.getAllRowsByParentId(knexInstance, req.params.parent_row_id)
+      .then(rows => {
+        res.json(rows.map(serializeRow))
       })
       .catch(next)
   })

@@ -11,6 +11,13 @@ const service = {
         .from(table.name)
         .orderBy(table.rowName, 'ASC')
     },
+    getAllRowsByParentId(knex, parent_row_id){
+        return knex
+        .select('*')
+        .from(table.name)
+        .where('community_id', parent_row_id)
+        .orderBy(table.rowName, 'ASC')
+    },
     getById(knex, row_id){
         return knex
         .from(table.name)
