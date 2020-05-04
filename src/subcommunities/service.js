@@ -11,7 +11,7 @@ const service = {
         .from(table.name)
         .orderBy(table.rowName, 'ASC')
     },
-    getAllRowsByParentId(knex, parent_row_id){
+    getAllRowsMatchingParentId(knex, parent_row_id){
         return knex
         .select('*')
         .from(table.name)

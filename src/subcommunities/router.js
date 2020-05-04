@@ -112,7 +112,7 @@ endpointRouter
   .route('/communities/:parent_row_id')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db')
-    endpointService.getAllRowsByParentId(knexInstance, req.params.parent_row_id)
+    endpointService.getAllRowsMatchingParentId(knexInstance, req.params.parent_row_id)
       .then(rows => {
         res.json(rows.map(serializeRow))
       })
