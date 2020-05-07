@@ -213,9 +213,6 @@ describe(`${table.name} endpoints`, function () {
         .send(newRow)
         .expect(201)
         .expect((res) => {
-          // Object.keys(res.body).forEach(key => {
-          //   key !== table.rowId ? expect(res.body[key]).to.eql(newRow[key]) : null
-          // })
           const reformattedRow = reformatRow(res.body);
           expect(reformattedRow).to.eql(newRow);
           expect(res.body).to.have.property(`${table.rowId}`);
