@@ -1,4 +1,4 @@
-TRUNCATE TABLE RESTART IDENTITY CASCADE; 
+TRUNCATE TABLE subcommunity RESTART IDENTITY CASCADE; 
 
 INSERT INTO subcommunity(subcommunity_name, community_id)
 

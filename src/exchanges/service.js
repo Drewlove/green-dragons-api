@@ -1,11 +1,19 @@
+//change table.name, getById include actual column name of row id, example 'student_id'
 const table = {
-  name: "community",
-  rowName: "community_name",
+  name: "exchange",
+  rowDate: "exchange_date",
 };
 
 const service = {
   getAllRows(knex) {
-    return knex.select("*").from(table.name).orderBy(table.rowName, "ASC");
+    return knex.select("*").from(table.name).orderBy(table.rowDate, "ASC");
+  },
+  getAllRowsMatchingParentId(knex, parent_row_id) {
+    return knex
+      .select("*")
+      .from(table.name)
+      .where("community_id", parent_row_id)
+      .orderBy(table.rowDate, "ASC");
   },
   getById(knex, row_id) {
     return knex
