@@ -1,6 +1,7 @@
 //change table.name, getById include actual column name of row id, example 'student_id'
 const table = {
   name: "exchange",
+  parentTable: "student",
   rowDate: "exchange_date",
 };
 
@@ -12,7 +13,7 @@ const service = {
     return knex
       .select("*")
       .from(table.name)
-      .where("community_id", parent_row_id)
+      .where(`${table.parentTable}_id`, parent_row_id)
       .orderBy(table.rowDate, "ASC");
   },
   getById(knex, row_id) {

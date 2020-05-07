@@ -24,6 +24,7 @@ const serializeRow = (row) => ({
 const table = {
   name: "exchange",
   endpoint: "exchanges",
+  parentTableEndpoint: "students",
   columns: ["student_id", "exchange_date", "amount", "note"],
   rowId: "exchange_id",
 };
@@ -109,7 +110,7 @@ endpointRouter
   });
 
 endpointRouter
-  .route(`/${table.endpoint}/:parent_row_id`)
+  .route(`/${table.parentTableEndpoint}/:parent_row_id`)
   .get((req, res, next) => {
     const knexInstance = req.app.get("db");
     endpointService
