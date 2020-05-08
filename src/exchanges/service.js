@@ -14,7 +14,7 @@ const service = {
       .select("*")
       .from(table.name)
       .where(`${table.parentTable}_id`, parent_row_id)
-      .orderBy(table.rowDate, "ASC");
+      .orderBy(table.rowDate, "DESC");
   },
   getById(knex, row_id) {
     return knex
