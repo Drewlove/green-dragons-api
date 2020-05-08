@@ -5,5 +5,5 @@ CREATE TABLE exchange(
     student_id INTEGER REFERENCES student(student_id) ON DELETE CASCADE NOT NULL, 
     exchange_date DATE NOT NULL, 
     amount NUMERIC (5, 2) NOT NULL,
-    note TEXT NOT NULL 
+    note TEXT 
 );
