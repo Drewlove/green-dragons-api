@@ -1,19 +1,31 @@
 const knex = require("knex");
 const app = require("../src/app");
-const { makeTestRows, makeMaliciousRow } = require("./students.fixtures");
+const {
+  makeParentTableStudentRows,
+  makeParentTableChallengeRows,
+  makeTestRows,
+  makeTestRow,
+  makeMaliciousRow,
+} = require("./challenge-entries.fixtures");
 const logger = require("../src/logger");
-
 const API_TOKEN = process.env.API_TOKEN;
 
 const table = {
-  name: "student",
-  endpoint: "students",
-  columns: ["first_name", "last_name", "birth_date"],
-  rowId: "student_id",
+  name: "challenge_entry",
+  parentTableStudent: "student",
+  parentTableChallenge: "challenge",
+  endpoint: "challenge-entries",
+  columns: ["challenge_id", "student_id", "record", "entry_date", "notes"],
+  xssColumn: "notes",
+  updatedColumn: {
+    notes: "updated note",
+  },
+  rowId: "challenge_entry_id",
 };
 
 const reformatTemplate = {
-  date: "birth_date",
+  row_id: "challenge_entry_id",
+  date: "entry_date",
 };
 
 const reformatRow = (row) => {
@@ -45,14 +57,34 @@ describe(`${table.name} endpoints`, function () {
     });
     app.set("db", db);
   });
-
   after("disconnect from db", () => db.destroy());
+
   before("clean the table", () =>
     db.raw(`TRUNCATE table ${table.name} RESTART IDENTITY CASCADE`)
+  );
+  before("clean the parent table, student", () =>
+    db.raw(
+      `TRUNCATE table ${table.parentTableStudent} RESTART IDENTITY CASCADE`
+    )
+  );
+  before("clean the parent table, challenge", () =>
+    db.raw(
+      `TRUNCATE table ${table.parentTableChallenge} RESTART IDENTITY CASCADE`
+    )
   );
 
   afterEach("cleanup", () =>
     db.raw(`TRUNCATE table ${table.name} RESTART IDENTITY CASCADE`)
+  );
+  afterEach("cleanup parent table, student", () =>
+    db.raw(
+      `TRUNCATE table ${table.parentTableStudent} RESTART IDENTITY CASCADE`
+    )
+  );
+  afterEach("cleanup parent table, challenge", () =>
+    db.raw(
+      `TRUNCATE table ${table.parentTableChallenge} RESTART IDENTITY CASCADE`
+    )
   );
 
   describe(`GET /api/${table.endpoint}`, () => {
@@ -68,8 +100,20 @@ describe(`${table.name} endpoints`, function () {
 
   context(`Given there are rows in table ${table.name} in the database`, () => {
     const testRows = makeTestRows();
+    const parentTableStudentRows = makeParentTableStudentRows();
+    const parentTableChallengeRows = makeParentTableChallengeRows();
     beforeEach("insert rows", () => {
-      return db.into(table.name).insert(testRows);
+      return db
+        .into(table.parentTableStudent)
+        .insert(parentTableStudentRows)
+        .then(() => {
+          return db
+            .into(table.parentTableChallenge)
+            .insert(parentTableChallengeRows);
+        })
+        .then(() => {
+          return db.into(table.name).insert(testRows);
+        });
     });
     it("responds with 200 and all of the rows", () => {
       return supertest(app)
@@ -87,8 +131,20 @@ describe(`${table.name} endpoints`, function () {
 
   context(`Given an XSS attack`, () => {
     const { maliciousRow, expectedRow } = makeMaliciousRow();
-    beforeEach("insert malicious row", () => {
-      return db.into(table.name).insert(maliciousRow);
+    const parentTableStudentRows = makeParentTableStudentRows();
+    const parentTableChallengeRows = makeParentTableChallengeRows();
+    beforeEach("insert rows", () => {
+      return db
+        .into(table.parentTableStudent)
+        .insert(parentTableStudentRows)
+        .then(() => {
+          return db
+            .into(table.parentTableChallenge)
+            .insert(parentTableChallengeRows);
+        })
+        .then(() => {
+          return db.into(table.name).insert(maliciousRow);
+        });
     });
 
     it("removes XSS attack content", () => {
@@ -97,7 +153,9 @@ describe(`${table.name} endpoints`, function () {
         .set("Authorization", `Bearer ${API_TOKEN}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body[0].first_name).to.eql(expectedRow.first_name);
+          expect(res.body[0][table.xssColumn]).to.eql(
+            expectedRow[table.xssColumn]
+          );
         });
     });
   });
@@ -117,8 +175,20 @@ describe(`${table.name} endpoints`, function () {
 
     context("Given there are rows in the database", () => {
       const testRows = makeTestRows();
+      const parentTableStudentRows = makeParentTableStudentRows();
+      const parentTableChallengeRows = makeParentTableChallengeRows();
       beforeEach("insert rows", () => {
-        return db.into(table.name).insert(testRows);
+        return db
+          .into(table.parentTableStudent)
+          .insert(parentTableStudentRows)
+          .then(() => {
+            return db
+              .into(table.parentTableChallenge)
+              .insert(parentTableChallengeRows);
+          })
+          .then(() => {
+            return db.into(table.name).insert(testRows);
+          });
       });
       it("responds with 200 and the specified row", () => {
         const rowId = 1;
@@ -136,8 +206,20 @@ describe(`${table.name} endpoints`, function () {
 
   context(`Given an XSS attack row`, () => {
     const { maliciousRow, expectedRow } = makeMaliciousRow();
-    beforeEach("insert malicious row", () => {
-      return db.into(table.name).insert(maliciousRow);
+    const parentTableStudentRows = makeParentTableStudentRows();
+    const parentTableChallengeRows = makeParentTableChallengeRows();
+    beforeEach("insert rows", () => {
+      return db
+        .into(table.parentTableStudent)
+        .insert(parentTableStudentRows)
+        .then(() => {
+          return db
+            .into(table.parentTableChallenge)
+            .insert(parentTableChallengeRows);
+        })
+        .then(() => {
+          return db.into(table.name).insert(maliciousRow);
+        });
     });
     it("removes XSS attack content", () => {
       return supertest(app)
@@ -145,28 +227,36 @@ describe(`${table.name} endpoints`, function () {
         .set("Authorization", `Bearer ${API_TOKEN}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body.first_name).to.eql(expectedRow.first_name);
+          expect(res.body[table.xssColumn]).to.eql(
+            expectedRow[table.xssColumn]
+          );
         });
     });
   });
 
   describe(`POST /api/${table.endpoint}`, () => {
+    const parentTableStudentRows = makeParentTableStudentRows();
+    const parentTableChallengeRows = makeParentTableChallengeRows();
+    beforeEach("insert rows", () => {
+      return db
+        .into(table.parentTableStudent)
+        .insert(parentTableStudentRows)
+        .then(() => {
+          return db
+            .into(table.parentTableChallenge)
+            .insert(parentTableChallengeRows);
+        });
+    });
+    const newRow = makeTestRow();
     it(`creates a row, responding with 201 and the new row`, () => {
-      const newRow = {
-        first_name: "Bob",
-        last_name: "Bobberson",
-        birth_date: new Date("1982-11-14"),
-      };
       return supertest(app)
         .post(`/api/${table.endpoint}`)
         .set("Authorization", `Bearer ${API_TOKEN}`)
         .send(newRow)
         .expect(201)
         .expect((res) => {
-          const resBirthdate = new Date(res.body.birth_date);
-          expect(res.body.first_name).to.eql(newRow.first_name);
-          expect(res.body.last_name).to.eql(newRow.last_name);
-          expect(resBirthdate).to.eql(newRow.birth_date);
+          const reformattedRow = reformatRow(res.body);
+          expect(reformattedRow).to.eql(newRow);
           expect(res.body).to.have.property(`${table.rowId}`);
           expect(res.headers.location).to.eql(
             `/api/${table.endpoint}/${res.body[table.rowId]}`
@@ -179,14 +269,8 @@ describe(`${table.name} endpoints`, function () {
             .expect(res.body)
         );
     });
-
     table.columns.forEach((field) => {
-      const newRow = {
-        first_name: "Testy",
-        last_name: "New Name",
-        birth_date: "01-01-1980",
-      };
-
+      const newRow = makeTestRow();
       it(`responds with 400 and an error message when the '${field}' is missing`, () => {
         delete newRow[field];
         return supertest(app)
@@ -223,14 +307,24 @@ describe(`${table.name} endpoints`, function () {
           });
       });
     });
-
     context("Given there are rows in table", () => {
       const testRows = makeTestRows();
 
+      const parentTableStudentRows = makeParentTableStudentRows();
+      const parentTableChallengeRows = makeParentTableChallengeRows();
       beforeEach("insert rows", () => {
-        return db.into(table.name).insert(testRows);
+        return db
+          .into(table.parentTableStudent)
+          .insert(parentTableStudentRows)
+          .then(() => {
+            return db
+              .into(table.parentTableChallenge)
+              .insert(parentTableChallengeRows);
+          })
+          .then(() => {
+            return db.into(table.name).insert(testRows);
+          });
       });
-
       it("responds with 204 and removes the row", () => {
         const idToRemove = 1;
         return supertest(app)
@@ -259,26 +353,31 @@ describe(`${table.name} endpoints`, function () {
           });
       });
     });
-
     context("Given there are rows in the database", () => {
       const testRows = makeTestRows();
+      const parentTableStudentRows = makeParentTableStudentRows();
+      const parentTableChallengeRows = makeParentTableChallengeRows();
 
       beforeEach("insert rows", () => {
-        return db.into(table.name).insert(testRows);
+        return db
+          .into(table.parentTableStudent)
+          .insert(parentTableStudentRows)
+          .then(() => {
+            return db
+              .into(table.parentTableChallenge)
+              .insert(parentTableChallengeRows);
+          })
+          .then(() => {
+            return db.into(table.name).insert(testRows);
+          });
       });
-
       it("responds with 204 and updates the row", () => {
         const idToUpdate = 2;
-        const updatedRow = {
-          first_name: "New First Name",
-          last_name: "New Last Name",
-          birth_date: new Date("01-01-1900"),
-        };
+        const updatedRow = makeTestRow();
         const expectedRow = {
           ...testRows[idToUpdate - 1],
           ...updatedRow,
         };
-
         return supertest(app)
           .patch(`/api/${table.endpoint}/${idToUpdate}`)
           .send(updatedRow)
@@ -289,15 +388,10 @@ describe(`${table.name} endpoints`, function () {
               .get(`/api/${table.endpoint}/${idToUpdate}`)
               .set("Authorization", `Bearer ${API_TOKEN}`)
               .then((res) => {
-                const resReformattedDate = {
-                  ...res.body,
-                  birth_date: new Date(res.body.birth_date),
-                };
-                expect(expectedRow).to.eql(resReformattedDate);
+                expect(expectedRow).to.eql(res.body);
               });
           });
       });
-
       it(`responds with 400 when no required fields supplied`, () => {
         const idToUpdate = 2;
         return supertest(app)
@@ -310,22 +404,18 @@ describe(`${table.name} endpoints`, function () {
             },
           });
       });
-
       it(`responds with 204 when updating only a subset of fields`, () => {
         const idToUpdate = 2;
-        const updatedRow = {
-          last_name: "new last name",
-        };
+
         const expectedRow = {
           ...testRows[idToUpdate - 1],
-          ...updatedRow,
+          ...table.updatedColumn,
         };
-
         return supertest(app)
           .patch(`/api/${table.endpoint}/${idToUpdate}`)
           .set("Authorization", `Bearer ${API_TOKEN}`)
           .send({
-            ...updatedRow,
+            ...table.updatedColumn,
             fieldToIgnore: "should not be in GET response",
           })
           .expect(204)
@@ -334,11 +424,8 @@ describe(`${table.name} endpoints`, function () {
               .get(`/api/${table.endpoint}/${idToUpdate}`)
               .set("Authorization", `Bearer ${API_TOKEN}`)
               .then((res) => {
-                const resReformattedDate = {
-                  ...res.body,
-                  birth_date: new Date(res.body.birth_date),
-                };
-                expect(expectedRow).to.eql(resReformattedDate);
+                const reformattedRow = reformatRow(res.body);
+                expect(reformattedRow).to.eql(expectedRow);
               })
           );
       });
