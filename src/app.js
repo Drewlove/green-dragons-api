@@ -11,6 +11,7 @@ const challengesRouter = require("./challenges/router");
 const communitiesRouter = require("./communities/router");
 const subcommunitiesRouter = require("./subcommunities/router");
 const exchangesRouter = require("./exchanges/router");
+const challengeEntriesRouter = require("./challenge_entries/router");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api/challenges", challengesRouter);
 app.use("/api/communities", communitiesRouter);
 app.use("/api/subcommunities", subcommunitiesRouter);
 app.use("/api/exchanges", exchangesRouter);
+app.use("/api/challenge-entries", challengeEntriesRouter);
 //other routers go here
 
 //Open heroku url in browser, see if {ok: true} appears
