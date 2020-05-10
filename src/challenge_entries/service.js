@@ -1,6 +1,7 @@
 const table = {
   name: "challenge_entry",
   parentTable: "student",
+  orderRow: "entry_date",
 };
 
 const service = {
@@ -11,10 +12,14 @@ const service = {
     return knex.select("*").from(table.name).where("student_id", student_id);
   },
   getAllRowsMatchingStudentAndChallenge(knex, student_id, challenge_id) {
-    return knex.select("*").from(table.name).where({
-      student_id: student_id,
-      challenge_id: challenge_id,
-    });
+    return knex
+      .select("*")
+      .from(table.name)
+      .where({
+        student_id: student_id,
+        challenge_id: challenge_id,
+      })
+      .orderBy(table.orderRow, "DESC");
   },
   getById(knex, row_id) {
     return knex
