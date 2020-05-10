@@ -8,7 +8,7 @@ const service = {
   },
   getById(knex, row_id) {
     return knex
-      .from(tableName)
+      .from(table.name)
       .select("*")
       .where(`${table.name}_id`, row_id)
       .first();
