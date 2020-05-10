@@ -1,37 +1,33 @@
-const tableName = 'challenge'
-
+const table = {
+  name: "challenge",
+  orderRow: "challenge_name",
+};
 const service = {
-    getAllRows(knex){
-        return knex
-        .select('*')
-        .from(tableName)
-    }, 
-    getById(knex, row_id){
-        return knex
-        .from(tableName)
-        .select('*')
-        .where(`${tableName}_id`, row_id)
-        .first()
-    }, 
-    insertRow(knex, newRow){
-        return knex
-        .insert(newRow)
-        .into(tableName)
-        .returning('*')
-        .then(rows => {
-            return rows[0]
-        })
-    }, 
-    updateRow(knex, row_id, newFields){
-        return knex(tableName)
-        .where(`${tableName}_id`, row_id)
-        .update(newFields)
-    }, 
-    deleteRow(knex, row_id){
-        return knex(tableName)
-        .where(`${tableName}_id`, row_id)
-        .delete()
-    }
-}
+  getAllRows(knex) {
+    return knex.select("*").from(table.name).orderBy(table.orderRow, "ASC");
+  },
+  getById(knex, row_id) {
+    return knex
+      .from(tableName)
+      .select("*")
+      .where(`${table.name}_id`, row_id)
+      .first();
+  },
+  insertRow(knex, newRow) {
+    return knex
+      .insert(newRow)
+      .into(table.name)
+      .returning("*")
+      .then((rows) => {
+        return rows[0];
+      });
+  },
+  updateRow(knex, row_id, newFields) {
+    return knex(table.name).where(`${table.name}_id`, row_id).update(newFields);
+  },
+  deleteRow(knex, row_id) {
+    return knex(tableName).where(`${table.name}_id`, row_id).delete();
+  },
+};
 
-module.exports = service
+module.exports = service;
