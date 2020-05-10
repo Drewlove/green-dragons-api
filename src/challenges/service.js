@@ -26,7 +26,7 @@ const service = {
     return knex(table.name).where(`${table.name}_id`, row_id).update(newFields);
   },
   deleteRow(knex, row_id) {
-    return knex(tableName).where(`${table.name}_id`, row_id).delete();
+    return knex(table.name).where(`${table.name}_id`, row_id).delete();
   },
 };
 
