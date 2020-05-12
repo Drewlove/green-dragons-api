@@ -34,16 +34,8 @@ endpointRouter
       .catch(next);
   })
   .post(jsonParser, (req, res, next) => {
-    const {
-      challenge_entry_id,
-      challenge_id,
-      student_id,
-      record,
-      entry_date,
-      notes,
-    } = req.body;
+    const { challenge_id, student_id, record, entry_date, notes } = req.body;
     const newRow = {
-      challenge_entry_id,
       challenge_id,
       student_id,
       record,
