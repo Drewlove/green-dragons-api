@@ -2,9 +2,9 @@ TRUNCATE TABLE student RESTART IDENTITY CASCADE;
 
 INSERT INTO student(first_name, last_name, birth_date)
 VALUES
+('Drew', 'Love', '1984-09-11'),
 ('Mike', 'Cermak', '1980-09-01'),
-('Ale', 'Cabrera-Mondragon', '1994-06-01'),
-('Drew', 'Love', '1984-09-11');
+('Ale', 'Cabrera-Mondragon', '1994-06-01');
 
 
 -- SEED SCRIPT
