@@ -19,7 +19,7 @@ const service = {
         student_id: student_id,
         challenge_id: challenge_id,
       })
-      .orderBy(table.orderRow, "DESC");
+      .orderBy(table.orderRow, "ASC");
   },
   getById(knex, row_id) {
     return knex
