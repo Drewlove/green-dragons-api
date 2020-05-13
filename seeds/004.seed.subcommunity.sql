@@ -12,3 +12,6 @@ VALUES
 ('Sprouts 1', 3),
 ('Sprouts 2', 3),
 ('Sprouts 3', 3);
+
+-- SEED SCRIPT
+-- psql -f psql -f ~/Projects/green-dragons-api/seeds/004.seed.subcommunity.sql green_dragons;

@@ -66,7 +66,7 @@ function makeTestRows() {
 
 function makeTestRow() {
   return {
-    challenge_entry_id: 4,
+    challenge_entry_id: 1,
     challenge_id: 1,
     student_id: 1,
     record: 40,

@@ -8,4 +8,4 @@ VALUES
 
 
 -- SEED SCRIPT
--- psql -f ~/Projects/A1-Review/green-dragons-api/seeds/001.users/seed.student.sql green_dragons;
+-- psql -f ~/Projects/A1-Review/green-dragons-api/seeds/001.seed.student.sql green_dragons;

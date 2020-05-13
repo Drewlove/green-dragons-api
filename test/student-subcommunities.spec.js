@@ -2,30 +2,29 @@ const knex = require("knex");
 const app = require("../src/app");
 const {
   makeParentTableStudentRows,
-  makeParentTableChallengeRows,
+  makeGrandparentTableCommunityRows,
+  makeParentTableSubcommunityRows,
   makeTestRows,
   makeTestRow,
-  makeMaliciousRow,
-} = require("./challenge-entries.fixtures");
+} = require("./student-subcommunities.fixtures");
 const logger = require("../src/logger");
 const API_TOKEN = process.env.API_TOKEN;
 
 const table = {
-  name: "challenge_entry",
+  name: "student_subcommunity",
   parentTableStudent: "student",
-  parentTableChallenge: "challenge",
-  endpoint: "challenge-entries",
-  columns: ["challenge_id", "student_id", "record", "entry_date", "notes"],
-  xssColumn: "notes",
+  parentTableSubcommunity: "subcommunity",
+  grandparentTableCommunity: "community",
+  endpoint: "student-subcommunities",
+  columns: ["subcommunity_id", "student_id"],
   updatedColumn: {
-    notes: "updated note",
+    subcommunity_id: 4,
   },
-  rowId: "challenge_entry_id",
+  rowId: "student_subcommunity_id",
 };
 
 const reformatTemplate = {
-  row_id: "challenge_entry_id",
-  date: "entry_date",
+  row_id: "student_subcommunity_id",
 };
 
 const reformatRow = (row) => {
@@ -67,9 +66,14 @@ describe(`${table.name} endpoints`, function () {
       `TRUNCATE table ${table.parentTableStudent} RESTART IDENTITY CASCADE`
     )
   );
-  before("clean the parent table, challenge", () =>
+  before("clean the parent table, subcommunity", () =>
     db.raw(
-      `TRUNCATE table ${table.parentTableChallenge} RESTART IDENTITY CASCADE`
+      `TRUNCATE table ${table.parentTableSubcommunity} RESTART IDENTITY CASCADE`
+    )
+  );
+  before("clean the grandparent table, community", () =>
+    db.raw(
+      `TRUNCATE table ${table.grandparentTableCommunity} RESTART IDENTITY CASCADE`
     )
   );
 
@@ -81,9 +85,14 @@ describe(`${table.name} endpoints`, function () {
       `TRUNCATE table ${table.parentTableStudent} RESTART IDENTITY CASCADE`
     )
   );
-  afterEach("cleanup parent table, challenge", () =>
+  afterEach("cleanup parent table, subcommunity", () =>
     db.raw(
-      `TRUNCATE table ${table.parentTableChallenge} RESTART IDENTITY CASCADE`
+      `TRUNCATE table ${table.parentTableSubcommunity} RESTART IDENTITY CASCADE`
+    )
+  );
+  afterEach("cleanup parent table, community", () =>
+    db.raw(
+      `TRUNCATE table ${table.grandparentTableCommunity} RESTART IDENTITY CASCADE`
     )
   );
 
@@ -101,15 +110,21 @@ describe(`${table.name} endpoints`, function () {
   context(`Given there are rows in table ${table.name} in the database`, () => {
     const testRows = makeTestRows();
     const parentTableStudentRows = makeParentTableStudentRows();
-    const parentTableChallengeRows = makeParentTableChallengeRows();
+    const parentTableSubcommunityRows = makeParentTableSubcommunityRows();
+    const grandparentTableCommunityRows = makeGrandparentTableCommunityRows();
     beforeEach("insert rows", () => {
       return db
         .into(table.parentTableStudent)
         .insert(parentTableStudentRows)
         .then(() => {
           return db
-            .into(table.parentTableChallenge)
-            .insert(parentTableChallengeRows);
+            .into(table.grandparentTableCommunity)
+            .insert(grandparentTableCommunityRows);
+        })
+        .then(() => {
+          return db
+            .into(table.parentTableSubcommunity)
+            .insert(parentTableSubcommunityRows);
         })
         .then(() => {
           return db.into(table.name).insert(testRows);
@@ -129,36 +144,36 @@ describe(`${table.name} endpoints`, function () {
     });
   });
 
-  context(`Given an XSS attack`, () => {
-    const { maliciousRow, expectedRow } = makeMaliciousRow();
-    const parentTableStudentRows = makeParentTableStudentRows();
-    const parentTableChallengeRows = makeParentTableChallengeRows();
-    beforeEach("insert rows", () => {
-      return db
-        .into(table.parentTableStudent)
-        .insert(parentTableStudentRows)
-        .then(() => {
-          return db
-            .into(table.parentTableChallenge)
-            .insert(parentTableChallengeRows);
-        })
-        .then(() => {
-          return db.into(table.name).insert(maliciousRow);
-        });
-    });
+  // context(`Given an XSS attack`, () => {
+  //   const { maliciousRow, expectedRow } = makeMaliciousRow();
+  //   const parentTableStudentRows = makeParentTableStudentRows();
+  //   const parentTableSubcommunityeRows = makeParentTableSubcommunityRows();
+  //   beforeEach("insert rows", () => {
+  //     return db
+  //       .into(table.parentTableStudent)
+  //       .insert(parentTableStudentRows)
+  //       .then(() => {
+  //         return db
+  //           .into(table.parentTableSubcommunity)
+  //           .insert(parentTableSubcommunityRows);
+  //       })
+  //       .then(() => {
+  //         return db.into(table.name).insert(maliciousRow);
+  //       });
+  //   });
 
-    it("removes XSS attack content", () => {
-      return supertest(app)
-        .get(`/api/${table.endpoint}`)
-        .set("Authorization", `Bearer ${API_TOKEN}`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body[0][table.xssColumn]).to.eql(
-            expectedRow[table.xssColumn]
-          );
-        });
-    });
-  });
+  //   it("removes XSS attack content", () => {
+  //     return supertest(app)
+  //       .get(`/api/${table.endpoint}`)
+  //       .set("Authorization", `Bearer ${API_TOKEN}`)
+  //       .expect(200)
+  //       .expect((res) => {
+  //         expect(res.body[0][table.xssColumn]).to.eql(
+  //           expectedRow[table.xssColumn]
+  //         );
+  //       });
+  //   });
+  //});
 
   describe(`GET /api/${table.endpoint}/:rowId`, () => {
     context(`Given no rows`, () => {
@@ -176,15 +191,21 @@ describe(`${table.name} endpoints`, function () {
     context("Given there are rows in the database", () => {
       const testRows = makeTestRows();
       const parentTableStudentRows = makeParentTableStudentRows();
-      const parentTableChallengeRows = makeParentTableChallengeRows();
+      const parentTableSubcommunityRows = makeParentTableSubcommunityRows();
+      const grandparentTableCommunityRows = makeGrandparentTableCommunityRows();
       beforeEach("insert rows", () => {
         return db
           .into(table.parentTableStudent)
           .insert(parentTableStudentRows)
           .then(() => {
             return db
-              .into(table.parentTableChallenge)
-              .insert(parentTableChallengeRows);
+              .into(table.grandparentTableCommunity)
+              .insert(grandparentTableCommunityRows);
+          })
+          .then(() => {
+            return db
+              .into(table.parentTableSubcommunity)
+              .insert(parentTableSubcommunityRows);
           })
           .then(() => {
             return db.into(table.name).insert(testRows);
@@ -204,47 +225,53 @@ describe(`${table.name} endpoints`, function () {
     });
   });
 
-  context(`Given an XSS attack row`, () => {
-    const { maliciousRow, expectedRow } = makeMaliciousRow();
-    const parentTableStudentRows = makeParentTableStudentRows();
-    const parentTableChallengeRows = makeParentTableChallengeRows();
-    beforeEach("insert rows", () => {
-      return db
-        .into(table.parentTableStudent)
-        .insert(parentTableStudentRows)
-        .then(() => {
-          return db
-            .into(table.parentTableChallenge)
-            .insert(parentTableChallengeRows);
-        })
-        .then(() => {
-          return db.into(table.name).insert(maliciousRow);
-        });
-    });
-    it("removes XSS attack content", () => {
-      return supertest(app)
-        .get(`/api/${table.endpoint}/${maliciousRow[table.rowId]}`)
-        .set("Authorization", `Bearer ${API_TOKEN}`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body[table.xssColumn]).to.eql(
-            expectedRow[table.xssColumn]
-          );
-        });
-    });
-  });
+  // context(`Given an XSS attack row`, () => {
+  //   const { maliciousRow, expectedRow } = makeMaliciousRow();
+  //   const parentTableStudentRows = makeParentTableStudentRows();
+  //   const parentTableSubcommunityRows = makeParentTableSubcommunityRows();
+  //   beforeEach("insert rows", () => {
+  //     return db
+  //       .into(table.parentTableStudent)
+  //       .insert(parentTableStudentRows)
+  //       .then(() => {
+  //         return db
+  //           .into(table.parentTableChallenge)
+  //           .insert(parentTableSubcommunityRows);
+  //       })
+  //       .then(() => {
+  //         return db.into(table.name).insert(maliciousRow);
+  //       });
+  //   });
+  //   it("removes XSS attack content", () => {
+  //     return supertest(app)
+  //       .get(`/api/${table.endpoint}/${maliciousRow[table.rowId]}`)
+  //       .set("Authorization", `Bearer ${API_TOKEN}`)
+  //       .expect(200)
+  //       .expect((res) => {
+  //         expect(res.body[table.xssColumn]).to.eql(
+  //           expectedRow[table.xssColumn]
+  //         );
+  //       });
+  //   });
+  // });
 
   describe(`POST /api/${table.endpoint}`, () => {
     const parentTableStudentRows = makeParentTableStudentRows();
-    const parentTableChallengeRows = makeParentTableChallengeRows();
+    const parentTableSubcommunityRows = makeParentTableSubcommunityRows();
+    const grandparentTableCommunityRows = makeGrandparentTableCommunityRows();
     beforeEach("insert rows", () => {
       return db
         .into(table.parentTableStudent)
         .insert(parentTableStudentRows)
         .then(() => {
           return db
-            .into(table.parentTableChallenge)
-            .insert(parentTableChallengeRows);
+            .into(table.grandparentTableCommunity)
+            .insert(grandparentTableCommunityRows);
+        })
+        .then(() => {
+          return db
+            .into(table.parentTableSubcommunity)
+            .insert(parentTableSubcommunityRows);
         });
     });
     const newRow = makeTestRow();
@@ -282,17 +309,17 @@ describe(`${table.name} endpoints`, function () {
           });
       });
     });
-    it("removes XSS attack content from response", () => {
-      const { maliciousRow, expectedRow } = makeMaliciousRow();
-      return supertest(app)
-        .post(`/api/${table.endpoint}`)
-        .set("Authorization", `Bearer ${API_TOKEN}`)
-        .send(maliciousRow)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body.first_name).to.eql(expectedRow.first_name);
-        });
-    });
+    // it("removes XSS attack content from response", () => {
+    //   const { maliciousRow, expectedRow } = makeMaliciousRow();
+    //   return supertest(app)
+    //     .post(`/api/${table.endpoint}`)
+    //     .set("Authorization", `Bearer ${API_TOKEN}`)
+    //     .send(maliciousRow)
+    //     .expect(201)
+    //     .expect((res) => {
+    //       expect(res.body.first_name).to.eql(expectedRow.first_name);
+    //     });
+    // });
   });
 
   describe(`DELETE /api/${table.name}/:rowId`, () => {
@@ -309,17 +336,22 @@ describe(`${table.name} endpoints`, function () {
     });
     context("Given there are rows in table", () => {
       const testRows = makeTestRows();
-
       const parentTableStudentRows = makeParentTableStudentRows();
-      const parentTableChallengeRows = makeParentTableChallengeRows();
+      const parentTableSubcommunityRows = makeParentTableSubcommunityRows();
+      const grandparentTableCommunityRows = makeGrandparentTableCommunityRows();
       beforeEach("insert rows", () => {
         return db
           .into(table.parentTableStudent)
           .insert(parentTableStudentRows)
           .then(() => {
             return db
-              .into(table.parentTableChallenge)
-              .insert(parentTableChallengeRows);
+              .into(table.grandparentTableCommunity)
+              .insert(grandparentTableCommunityRows);
+          })
+          .then(() => {
+            return db
+              .into(table.parentTableSubcommunity)
+              .insert(parentTableSubcommunityRows);
           })
           .then(() => {
             return db.into(table.name).insert(testRows);
@@ -356,16 +388,21 @@ describe(`${table.name} endpoints`, function () {
     context("Given there are rows in the database", () => {
       const testRows = makeTestRows();
       const parentTableStudentRows = makeParentTableStudentRows();
-      const parentTableChallengeRows = makeParentTableChallengeRows();
-
+      const parentTableSubcommunityRows = makeParentTableSubcommunityRows();
+      const grandparentTableCommunityRows = makeGrandparentTableCommunityRows();
       beforeEach("insert rows", () => {
         return db
           .into(table.parentTableStudent)
           .insert(parentTableStudentRows)
           .then(() => {
             return db
-              .into(table.parentTableChallenge)
-              .insert(parentTableChallengeRows);
+              .into(table.grandparentTableCommunity)
+              .insert(grandparentTableCommunityRows);
+          })
+          .then(() => {
+            return db
+              .into(table.parentTableSubcommunity)
+              .insert(parentTableSubcommunityRows);
           })
           .then(() => {
             return db.into(table.name).insert(testRows);

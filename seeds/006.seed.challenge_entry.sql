@@ -29,3 +29,6 @@ VALUES
 (4, 3, 150, '2020-02-11', '1/2 mile run'),
 (4, 3, 135, '2020-02-21', '1/2 mile run'),
 (4, 3, 120, '2020-03-01', '1/2 mile run');
+
+-- SEED SCRIPT
+-- psql -f psql -f ~/Projects/green-dragons-api/seeds/006.seed.challenge_entry.sql green_dragons;

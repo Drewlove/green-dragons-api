@@ -21,3 +21,6 @@ VALUES
 (3, '2000-01-03', 9.00, 'note 8'), 
 (3, '2000-01-01', 7.00, 'note 9'),
 (3, '2000-01-01', 7.00, 'note 9');
+
+-- SEED SCRIPT
+-- psql -f psql -f ~/Projects/green-dragons-api/seeds/005.seed.exchange.sql green_dragons;

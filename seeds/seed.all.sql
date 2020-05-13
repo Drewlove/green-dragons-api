@@ -5,6 +5,7 @@ BEGIN;
 \i /Users/Drew/Projects/green-dragons-api/seeds/004.seed.subcommunity.sql
 \i /Users/Drew/Projects/green-dragons-api/seeds/005.seed.exchange.sql
 \i /Users/Drew/Projects/green-dragons-api/seeds/006.seed.challenge_entry.sql
+\i /Users/Drew/Projects/green-dragons-api/seeds/007.seed.student_subcommunity.sql
 
 COMMIT;
 
