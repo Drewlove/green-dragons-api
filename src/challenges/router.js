@@ -1,113 +1,104 @@
-const path = require('path')
-const express = require('express')
-const xss = require('xss')
-const endpointService = require('./service')
-const logger = require('../logger')
+const path = require("path");
+const express = require("express");
+const xss = require("xss");
+const endpointService = require("./service");
+const logger = require("../logger");
 
-const endpointRouter = express.Router()
-const jsonParser = express.json()
+const endpointRouter = express.Router();
+const jsonParser = express.json();
 
-//REWRITE, include each row from table 
-const serializeRow = row => ({
+//REWRITE, include each row from table
+const serializeRow = (row) => ({
   challenge_id: row.challenge_id,
   challenge_name: xss(row.challenge_name),
   challenge_description: xss(row.challenge_description),
-  challenge_best_record: xss(row.challenge_best_record),
-  units: xss(row.units), 
-})
+  units: xss(row.units),
+});
 
 const table = {
-  name: 'challenge', 
-  columns: ['challenge_name', 'challenge_description', 'challenge_best_record', 'units'],
-  rowId: 'challenge_id'
-}
+  name: "challenge",
+  columns: ["challenge_name", "challenge_description", "units"],
+  rowId: "challenge_id",
+};
 
 endpointRouter
-  .route('/')
+  .route("/")
   .get((req, res, next) => {
-    const knexInstance = req.app.get('db')
-    endpointService.getAllRows(knexInstance)
-      .then(rows => {
-        res.json(rows.map(serializeRow))
+    const knexInstance = req.app.get("db");
+    endpointService
+      .getAllRows(knexInstance)
+      .then((rows) => {
+        res.json(rows.map(serializeRow));
       })
-      .catch(next)
+      .catch(next);
   })
   .post(jsonParser, (req, res, next) => {
-    const {challenge_name, challenge_description, challenge_best_record, units} = req.body
-    const newRow = {challenge_name, challenge_description, challenge_best_record, units}
+    const { challenge_name, challenge_description, units } = req.body;
+    const newRow = { challenge_name, challenge_description, units };
 
     for (const [key, value] of Object.entries(newRow))
       if (value == null)
         return res.status(400).json({
-          error: { message: `Missing '${key}' in request body` }
-        })  
+          error: { message: `Missing '${key}' in request body` },
+        });
 
-    endpointService.insertRow(
-      req.app.get('db'),
-      newRow
-    )
-      .then(row => {
+    endpointService
+      .insertRow(req.app.get("db"), newRow)
+      .then((row) => {
         res
           .status(201)
           .location(path.posix.join(req.originalUrl, `/${row[table.rowId]}`))
-          .json(serializeRow(row))
+          .json(serializeRow(row));
       })
-      .catch(next)
-  })
+      .catch(next);
+  });
 
 endpointRouter
-  .route('/:row_id')
+  .route("/:row_id")
   .all((req, res, next) => {
-    endpointService.getById(
-      req.app.get('db'),
-      req.params.row_id
-    )
-      .then(row => {
+    endpointService
+      .getById(req.app.get("db"), req.params.row_id)
+      .then((row) => {
         if (!row) {
           return res.status(404).json({
-            error: { message: `Row from table: '${table.name}' doesn't exist`}
-          })
+            error: { message: `Row from table: '${table.name}' doesn't exist` },
+          });
         }
-        res.row = row
-        next()
+        res.row = row;
+        next();
       })
-      .catch(next)
+      .catch(next);
   })
   .get((req, res, next) => {
-    res.json(serializeRow(res.row))
+    res.json(serializeRow(res.row));
   })
   .delete((req, res, next) => {
-    endpointService.deleteRow(
-      req.app.get('db'),
-      req.params.row_id
-    )
-      .then(numRowsAffected => {
-        res.status(204).end()
+    endpointService
+      .deleteRow(req.app.get("db"), req.params.row_id)
+      .then((numRowsAffected) => {
+        res.status(204).end();
       })
-      .catch(next)
+      .catch(next);
   })
   .patch(jsonParser, (req, res, next) => {
     //REWRITE, use table's column names
-    const {challenge_name, challenge_description, challenge_best_record, units} = req.body
-    const rowToUpdate = {challenge_name, challenge_description, challenge_best_record, units}
+    const { challenge_name, challenge_description, units } = req.body;
+    const rowToUpdate = { challenge_name, challenge_description, units };
 
-    const numberOfValues = Object.values(rowToUpdate).filter(Boolean).length
+    const numberOfValues = Object.values(rowToUpdate).filter(Boolean).length;
     if (numberOfValues === 0)
       return res.status(400).json({
         error: {
-          message: `Request body content must contain at least one of the following: ${table.columns}`
-        }
-      })
+          message: `Request body content must contain at least one of the following: ${table.columns}`,
+        },
+      });
 
-    endpointService.updateRow(
-      req.app.get('db'),
-      req.params.row_id,
-      rowToUpdate
-    )
-      .then(numRowsAffected => {
-        res.status(204).end()
+    endpointService
+      .updateRow(req.app.get("db"), req.params.row_id, rowToUpdate)
+      .then((numRowsAffected) => {
+        res.status(204).end();
       })
-      .catch(next)
-  })
+      .catch(next);
+  });
 
-module.exports = endpointRouter
+module.exports = endpointRouter;
