@@ -21,14 +21,12 @@ function makeParentTableChallengeRows() {
       challenge_name: "Archery Accuracy",
       challenge_description:
         "Score as many points as you can in 5 shots with the bow and arrow",
-      challenge_best_record: "highest",
       units: "targets",
       challenge_id: 1,
     },
     {
       challenge_name: "1/2 Mile Run",
       challenge_description: "Run a 1/2 mile as fast as possible.",
-      challenge_best_record: "lowest",
       units: "seconds",
       challenge_id: 2,
     },

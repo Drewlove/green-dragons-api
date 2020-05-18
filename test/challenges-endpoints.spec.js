@@ -11,12 +11,7 @@ const API_TOKEN = process.env.API_TOKEN;
 const table = {
   name: "challenge",
   endpoint: "challenges",
-  columns: [
-    "challenge_name",
-    "challenge_description",
-    "challenge_best_record",
-    "units",
-  ],
+  columns: ["challenge_name", "challenge_description", "units"],
   xssColumn: "challenge_name",
   updatedColumn: {
     challenge_name: "updated challenge name",
