@@ -13,7 +13,7 @@ VALUES
 (
   'Fitness Boxing',
   'Hit as many targets as possible in 2 minutes.',
-  'seconds'
+  'time'
 ),
 
 (
@@ -25,7 +25,7 @@ VALUES
 (
   '1/2 Mile Run',
   'Run a 1/2 mile as fast as possible.',
-  'seconds');
+  'time');
 
 -- SEED SCRIPT
 -- psql -f psql -f ~/Projects/green-dragons-api/seeds/002.seed.challenge.sql green_dragons;
