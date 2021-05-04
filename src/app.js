@@ -40,6 +40,7 @@ app.get("/TEST", (req, res) => {
 });
 
 app.use(function errorHandler(error, req, res, next) {
+  console.error(error.message);
   let response;
   if (NODE_ENV === "production") {
     response = { error: "Server error" };
