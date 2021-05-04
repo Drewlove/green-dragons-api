@@ -1,6 +1,7 @@
 const knex = require("knex");
 const app = require("./app");
 const { PORT, DATABASE_URL } = require("./config");
+const { NODE_ENV } = require("./config");
 
 if (NODE_ENV === "production") {
   db = knex({
